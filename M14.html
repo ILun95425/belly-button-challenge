@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belly Button Biodiversity</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <select id="selDataset"></select>
+    <div id="barChart"></div>
+
+
+    <script>
+       
+        const dataUrl = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
+
+        d3.json(dataUrl).then(data => {
+            const dropdown = d3.select("#selDataset");
+
+            
+            data.names.forEach(name => {
+                dropdown.append("option").attr("value", name).text(name);
+            });
+
+            
+            updateChart(data.names[0], data);
+        });
+
+        
+        function updateChart(sample, data) {
+            const sampleData = data.samples.find(d => d.id === sample);
+            const top10Samples = sampleData.sample_values.slice(0, 10).reverse();
+            const top10Ids = sampleData.otu_ids.slice(0, 10).reverse().map(id => `OTU ${id}`);
+            const top10Labels = sampleData.otu_labels.slice(0, 10).reverse();
+
+            const trace = {
+                x: top10Samples,
+                y: top10Ids,
+                text: top10Labels,
+                type: "bar",
+                orientation: "h"
+            };
+
+            const layout = {
+                title: `Top 10 OTUs for Sample ${sample}`,
+                xaxis: { title: "Sample Values" },
+                yaxis: { title: "OTU IDs" }
+            };
+
+            const chartContainer = d3.select("#barChart");
+            chartContainer.html(""); 
+
+            Plotly.newPlot("barChart", [trace], layout);
+        }
+
+        
+        d3.select("#selDataset").on("change", function() {
+            const selectedSample = d3.select(this).property("value");
+            d3.json(dataUrl).then(data => {
+                updateChart(selectedSample, data);
+            });
+        });
+        
+        
+    </script>
+</body>
+</html>
